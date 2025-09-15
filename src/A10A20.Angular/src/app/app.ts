@@ -1,7 +1,8 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, PLATFORM_ID } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { WeatherForecast } from './types/weatherForecast';
 import { WeatherService } from './weatherservice';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-root',
@@ -10,18 +11,21 @@ import { WeatherService } from './weatherservice';
   styleUrl: './app.scss'
 })
 export class App implements OnInit {
+  private readonly platform = inject(PLATFORM_ID);
   private readonly weatherService = inject(WeatherService);
 
   protected readonly title = signal('Angular');
-  protected forecasts: WeatherForecast[] = [];
+  protected readonly forecasts = signal<WeatherForecast[]>([]);
 
   ngOnInit(): void {
-    this.loadData();
+    if (isPlatformBrowser(this.platform)) {
+      this.loadData();
+    }
   }
 
   loadData(): void {
     this.weatherService.fetchData().subscribe({
-      next: result => this.forecasts = result,
+      next: result => this.forecasts.set(result),
       error: console.error
     });
   }

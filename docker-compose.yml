@@ -1,0 +1,46 @@
+services:
+  api:
+    build:
+      context: .
+      dockerfile: src/A10A20.Api/Dockerfile
+      target: final
+    container_name: a10a20-api
+    ports:
+      - "40080:8080"
+    restart: unless-stopped
+    networks:
+      - a10a20-network
+    volumes:
+      - api-logs:/var/log
+
+  angular:
+    build:
+      context: ./src/A10A20.Angular
+      dockerfile: Dockerfile
+      target: final
+    container_name: a10a20-angular
+    environment:
+      - PORT=80
+      - API_URL=http://a10a20-api:8080
+    ports:
+      - "4200:80"
+    depends_on:
+      - api
+    restart: unless-stopped
+    networks:
+      - a10a20-network
+    volumes:
+      - angular-logs:/var/log/nginx
+
+networks:
+  a10a20-network:
+    driver: bridge
+    name: a10a20-network
+
+volumes:
+  api-logs:
+    driver: local
+    name: a10a20-api-logs
+  angular-logs:
+    driver: local
+    name: a10a20-angular-logs
