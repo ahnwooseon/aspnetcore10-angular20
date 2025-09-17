@@ -1,5 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { WeatherForecast } from './types/weatherForecast';
+import { WeatherService } from './weatherservice';
 
 @Component({
   selector: 'app-root',
@@ -7,6 +9,20 @@ import { RouterOutlet } from '@angular/router';
   templateUrl: './app.html',
   styleUrl: './app.scss'
 })
-export class App {
-  protected readonly title = signal('A10A20.Angular');
+export class App implements OnInit {
+  private readonly weatherService = inject(WeatherService);
+
+  protected readonly title = signal('Angular');
+  protected forecasts: WeatherForecast[] = [];
+
+  ngOnInit(): void {
+    this.loadData();
+  }
+
+  loadData(): void {
+    this.weatherService.fetchData().subscribe({
+      next: result => this.forecasts = result,
+      error: console.error
+    });
+  }
 }
